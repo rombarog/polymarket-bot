@@ -6,8 +6,9 @@ URL = "https://gamma-api.polymarket.com/markets"
 ARCHIVO = "precios.json"
 UMBRAL = 0.02  # avisar si el precio cambia 2 puntos o más
 
-TOKEN = os.environ.get("TELEGRAM_TOKEN")
-CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+TOKEN = os.environ.get("TELEGRAM_TOKEN", "").strip()
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+print(f"Largo del token: {len(TOKEN)}, tiene ':' {':' in TOKEN}")
 
 
 def enviar_telegram(texto):
