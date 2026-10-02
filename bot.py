@@ -29,7 +29,7 @@ def precio_si(m):
         return precios[resultados.index("Yes")]
     except (KeyError, TypeError, ValueError):
         return None
-
+enviar_telegram("Bot conectado, prueba OK")
 
 mercados = []
 for offset in range(0, 1000, 500):
