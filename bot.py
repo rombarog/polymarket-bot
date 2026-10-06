@@ -35,13 +35,11 @@ def precio_si(m):
         return None
 
 
-def volumen(m):
-    for clave in ("volume24hr", "volumeNum", "volume"):
-        try:
-            return float(m[clave])
-        except (KeyError, TypeError, ValueError):
-            continue
-    return ""
+def volumen(m, clave):
+    try:
+        return float(m[clave])
+    except (KeyError, TypeError, ValueError):
+        return ""
 
 
 mercados = []
@@ -59,19 +57,19 @@ for m in mercados:
     if p is not None and "id" in m:
         id_ = str(m["id"])
         actuales[id_] = {"pregunta": m.get("question", ""), "precio": p}
-        vols[id_] = volumen(m)
+        vols[id_] = (volumen(m, "volume24hr"), volumen(m, "volumeNum"))
 
 print(f"Mercados leídos: {len(actuales)}")
 
-# Guardar cada lectura (fecha, id, precio, volumen) sin pisar las anteriores
+# Guardar cada lectura sin pisar las anteriores
 ahora_utc = datetime.now(timezone.utc).isoformat(timespec="seconds")
 nuevo = not os.path.exists(LECTURAS)
 with open(LECTURAS, "a", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
     if nuevo:
-        w.writerow(["fecha", "id", "precio", "volumen"])
+        w.writerow(["fecha", "id", "precio", "volumen_24h", "volumen_total"])
     for id_, d in actuales.items():
-        w.writerow([ahora_utc, id_, d["precio"], vols[id_]])
+        w.writerow([ahora_utc, id_, d["precio"], vols[id_][0], vols[id_][1]])
 
 # Nombres de los mercados, guardados aparte para no repetirlos en cada fila
 nombres = {}
