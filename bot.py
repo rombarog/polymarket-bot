@@ -1,14 +1,17 @@
+import csv
 import json
 import os
 import requests
+from datetime import datetime, timezone
 
 URL = "https://gamma-api.polymarket.com/markets"
 ARCHIVO = "precios.json"
+LECTURAS = "lecturas.csv"
+NOMBRES = "mercados.json"
 UMBRAL = 0.02  # avisar si el precio cambia 2 puntos o más
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN", "").strip()
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
-print(f"Largo del token: {len(TOKEN)}, tiene ':' {':' in TOKEN}")
 
 
 def enviar_telegram(texto):
@@ -32,6 +35,15 @@ def precio_si(m):
         return None
 
 
+def volumen(m):
+    for clave in ("volume24hr", "volumeNum", "volume"):
+        try:
+            return float(m[clave])
+        except (KeyError, TypeError, ValueError):
+            continue
+    return ""
+
+
 mercados = []
 for offset in range(0, 1000, 500):
     params = {"active": "true", "closed": "false", "limit": 500, "offset": offset}
@@ -41,13 +53,37 @@ for offset in range(0, 1000, 500):
     mercados.extend(pagina)
 
 actuales = {}
+vols = {}
 for m in mercados:
     p = precio_si(m)
     if p is not None and "id" in m:
-        actuales[str(m["id"])] = {"pregunta": m.get("question", ""), "precio": p}
+        id_ = str(m["id"])
+        actuales[id_] = {"pregunta": m.get("question", ""), "precio": p}
+        vols[id_] = volumen(m)
 
 print(f"Mercados leídos: {len(actuales)}")
 
+# Guardar cada lectura (fecha, id, precio, volumen) sin pisar las anteriores
+ahora_utc = datetime.now(timezone.utc).isoformat(timespec="seconds")
+nuevo = not os.path.exists(LECTURAS)
+with open(LECTURAS, "a", newline="", encoding="utf-8") as f:
+    w = csv.writer(f)
+    if nuevo:
+        w.writerow(["fecha", "id", "precio", "volumen"])
+    for id_, d in actuales.items():
+        w.writerow([ahora_utc, id_, d["precio"], vols[id_]])
+
+# Nombres de los mercados, guardados aparte para no repetirlos en cada fila
+nombres = {}
+if os.path.exists(NOMBRES):
+    with open(NOMBRES, encoding="utf-8") as f:
+        nombres = json.load(f)
+for id_, d in actuales.items():
+    nombres[id_] = d["pregunta"]
+with open(NOMBRES, "w", encoding="utf-8") as f:
+    json.dump(nombres, f, ensure_ascii=False)
+
+# Alertas
 if os.path.exists(ARCHIVO):
     with open(ARCHIVO) as f:
         anteriores = json.load(f)
