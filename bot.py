@@ -35,7 +35,7 @@ def precio_si(m):
         return None
 
 
-def volumen(m, clave):
+def numero(m, clave):
     try:
         return float(m[clave])
     except (KeyError, TypeError, ValueError):
@@ -58,13 +58,14 @@ for m in mercados:
     if p is not None and "id" in m:
         id_ = str(m["id"])
         actuales[id_] = {"pregunta": m.get("question", ""), "precio": p}
-vols[id_] = (volumen(m, "volume24hr"), volumen(m, "volumeNum"))
-libro[id_] = (volumen(m, "bestBid"), volumen(m, "bestAsk"))
+        vols[id_] = (numero(m, "volume24hr"), numero(m, "volumeNum"))
+        libro[id_] = (numero(m, "bestBid"), numero(m, "bestAsk"))
 
 print(f"Mercados leídos: {len(actuales)}")
 
 # Guardar cada lectura sin pisar las anteriores
 ahora_utc = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
 nuevo = not os.path.exists(LECTURAS)
 with open(LECTURAS, "a", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
@@ -73,14 +74,16 @@ with open(LECTURAS, "a", newline="", encoding="utf-8") as f:
     for id_, d in actuales.items():
         w.writerow([ahora_utc, id_, d["precio"], vols[id_][0], vols[id_][1]])
 
-# Nombres de los mercados, guardados aparte para no repetirlos en cada fila
+# Mejor precio de compra y de venta, para medir el spread real
+nuevo_libro = not os.path.exists("libro.csv")
 with open("libro.csv", "a", newline="", encoding="utf-8") as f:
- w = csv.writer(f)
- if f.tell() == 0:
-  w.writerow(["fecha", "id", "mejor_compra", "mejor_venta"])
- for id_ in actuales:
-  w.writerow([ahora_utc, id_, libro[id_][0], libro[id_][1]])
+    w = csv.writer(f)
+    if nuevo_libro:
+        w.writerow(["fecha", "id", "mejor_compra", "mejor_venta"])
+    for id_ in actuales:
+        w.writerow([ahora_utc, id_, libro[id_][0], libro[id_][1]])
 
+# Nombres de los mercados, guardados aparte para no repetirlos en cada fila
 nombres = {}
 if os.path.exists(NOMBRES):
     with open(NOMBRES, encoding="utf-8") as f:
