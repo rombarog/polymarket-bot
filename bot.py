@@ -52,12 +52,14 @@ for offset in range(0, 1000, 500):
 
 actuales = {}
 vols = {}
+libro = {}
 for m in mercados:
     p = precio_si(m)
     if p is not None and "id" in m:
         id_ = str(m["id"])
         actuales[id_] = {"pregunta": m.get("question", ""), "precio": p}
-        vols[id_] = (volumen(m, "volume24hr"), volumen(m, "volumeNum"))
+vols[id_] = (volumen(m, "volume24hr"), volumen(m, "volumeNum"))
+libro[id_] = (volumen(m, "bestBid"), volumen(m, "bestAsk"))
 
 print(f"Mercados leídos: {len(actuales)}")
 
@@ -72,6 +74,13 @@ with open(LECTURAS, "a", newline="", encoding="utf-8") as f:
         w.writerow([ahora_utc, id_, d["precio"], vols[id_][0], vols[id_][1]])
 
 # Nombres de los mercados, guardados aparte para no repetirlos en cada fila
+with open("libro.csv", "a", newline="", encoding="utf-8") as f:
+ w = csv.writer(f)
+ if f.tell() == 0:
+  w.writerow(["fecha", "id", "mejor_compra", "mejor_venta"])
+ for id_ in actuales:
+  w.writerow([ahora_utc, id_, libro[id_][0], libro[id_][1]])
+
 nombres = {}
 if os.path.exists(NOMBRES):
     with open(NOMBRES, encoding="utf-8") as f:
