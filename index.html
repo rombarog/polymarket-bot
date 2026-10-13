@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polymarket: ¿sirven los saltos de precio?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f8;--ink:#13242c;--mute:#52656e;--line:#cdd9de;--panel:#fff;--rev:#0f766e;--eq:#9fb3bb;--fol:#b4442f;--neg:#b4442f;--pos:#0f766e}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1a20;--ink:#e6eef1;--mute:#93a8b1;--line:#27404b;--panel:#142630;--rev:#3fc2b3;--eq:#5d7882;--fol:#e8806a;--neg:#e8806a;--pos:#3fc2b3}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 "Instrument Sans",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:48px 20px 72px}
+h1{font-size:clamp(2rem,6vw,3.1rem);line-height:1.08;margin:0 0 16px;letter-spacing:-.02em}
+h2{font-size:1.35rem;margin:56px 0 12px}
+p{margin:0 0 14px;max-width:62ch}
+.lead{font-size:1.15rem;color:var(--mute)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px}
+.bar{display:flex;height:44px;border-radius:6px;overflow:hidden;margin:14px 0 10px;font-weight:600;font-size:.95rem}
+.bar span{display:flex;align-items:center;justify-content:center;color:#fff;white-space:nowrap}
+.bar .r{background:var(--rev)}.bar .e{background:var(--eq)}.bar .f{background:var(--fol)}
+.key{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--mute);font-size:.9rem}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute);font-size:.9rem}
+.neg{color:var(--neg);font-weight:600}.pos{color:var(--pos);font-weight:600}
+.note{color:var(--mute);font-size:.92rem}
+a{color:var(--rev)}
+ul{padding-left:20px;max-width:62ch}li{margin-bottom:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>Los precios vuelven. Pero el spread se come la ganancia.</h1>
+<p class="lead">Medí qué pasa en Polymarket cuando un mercado se mueve 2 puntos o más de golpe. Un bot en Python lee 200 mercados cada 30 minutos y guarda todo. Esto es lo que encontré con una semana de datos.</p>
+
+<h2>Qué pasó después de cada salto</h2>
+<div class="panel">
+<p style="margin-bottom:0"><strong>Mercados chicos</strong> (menos de 1.000 USD de volumen en 24 h): 143 saltos en 24 mercados. Resultado 24 horas después:</p>
+<div class="bar" role="img" aria-label="73% revirtió, 10% igual, 17% siguió">
+<span class="r" style="width:73%">73% volvió</span><span class="e" style="width:10%">10%</span><span class="f" style="width:17%">17%</span>
+</div>
+<div class="key"><span>Verde: el precio revirtió</span><span>Gris: quedó igual</span><span>Rojo: siguió en la misma dirección</span></div>
+</div>
+<p class="note" style="margin-top:12px">El 90% de los saltos vienen de mercados chicos. En mercados grandes hay solo 15 casos, muy pocos para sacar conclusiones.</p>
+
+<h2>Simulación: 20 USD por cada salto</h2>
+<p>Si hubiera apostado 20 USD en cada señal, comprando contra el salto (revertir) o a favor (seguir), y cerrando a 1 o 24 horas. El spread es la diferencia entre el precio de compra y el de venta, y lo pagás en cada lado.</p>
+<div class="panel scroll">
+<table>
+<thead><tr><th>Spread por lado</th><th>Revertir 1 h</th><th>Revertir 24 h</th><th>Seguir 1 h</th><th>Seguir 24 h</th></tr></thead>
+<tbody>
+<tr><td>0 (ideal, no existe)</td><td class="pos">+421</td><td class="pos">+407</td><td class="neg">−289</td><td class="neg">−390</td></tr>
+<tr><td>1 centavo</td><td class="neg">−142</td><td class="neg">−103</td><td class="neg">−638</td><td class="neg">−688</td></tr>
+<tr><td>2 centavos</td><td class="neg">−628</td><td class="neg">−541</td><td class="neg">−954</td><td class="neg">−958</td></tr>
+<tr><td>4 centavos</td><td class="neg">−1434</td><td class="neg">−1262</td><td class="neg">−1509</td><td class="neg">−1430</td></tr>
+</tbody>
+</table>
+</div>
+<p class="note" style="margin-top:12px">Resultado total en USD sobre 301 operaciones (1 h) y 260 (24 h).</p>
+
+<h2>Conclusión</h2>
+<p>La reversión es real: acierta entre 64% y 72% de las veces sin costos. Pero gana unos 1,50 USD por cada 20, y con 1 centavo de spread por lado ya da pérdida. Apostar a que el salto continúa pierde en todos los escenarios.</p>
+
+<h2>Límites de este análisis</h2>
+<ul>
+<li>Es una semana de datos y unos 24 mercados que se repiten.</li>
+<li>Los saltos de un mismo mercado se solapan, así que el total pesa menos de lo que parece.</li>
+<li>El precio guardado es un punto medio, y el spread de la simulación es supuesto.</li>
+<li>Ya se está guardando el mejor precio de compra y venta de cada mercado para repetir la simulación con el spread real.</li>
+</ul>
+
+<h2>Cómo está hecho</h2>
+<p>Python y la API pública de Polymarket, corriendo solo cada 30 minutos con GitHub Actions y avisando por Telegram. El código y los datos están en <a href="https://github.com/rombarog/polymarket-bot">github.com/rombarog/polymarket-bot</a>.</p>
+<p class="note">Proyecto de análisis de datos. No es una recomendación de inversión. Verificá que Polymarket esté permitido en tu país antes de usarlo.</p>
+</main>
+</body>
+</html>
