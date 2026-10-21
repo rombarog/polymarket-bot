@@ -37,11 +37,13 @@ th,td{padding:11px 12px;text-align:right;border-bottom:1px solid var(--line)}
 th:first-child,td:first-child{text-align:left}
 th{font-weight:500;color:var(--mute);font-size:.9rem}
 .neg{color:var(--rd);font-weight:700;text-shadow:0 0 14px rgba(255,77,109,.45)}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:-1;opacity:.3;pointer-events:none}
 a{color:var(--cy)}
 ul{padding-left:20px;max-width:62ch}li{margin-bottom:8px}
 </style>
 </head>
 <body>
+<canvas id="bg" aria-hidden="true"></canvas>
 <main>
 <div class="big">13<small>¢</small></div>
 <p class="cap">es el spread típico de Polymarket en el momento en que un mercado "salta" 2 puntos.</p>
@@ -89,5 +91,47 @@ ul{padding-left:20px;max-width:62ch}li{margin-bottom:8px}
 <p>Python y la API pública de Polymarket, corriendo solo cada 30 minutos con GitHub Actions y avisando por Telegram. El código y los datos están en <a href="https://github.com/rombarog/polymarket-bot">github.com/rombarog/polymarket-bot</a>.</p>
 <p class="note">Proyecto de análisis de datos. No es una recomendación de inversión. Verificá que Polymarket esté permitido en tu país antes de usarlo.</p>
 </main>
+<script>
+(function(){
+var c=document.getElementById("bg"),x=c.getContext("2d");
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var data=[],shown=0;
+function seed(n){
+  var s=7,p=0;
+  function r(){s=(s*16807)%2147483647;return s/2147483647;}
+  data=[];
+  for(var i=0;i<n;i++){
+    var o=p,cl=o+0.55+(r()-0.42)*2.2;
+    data.push([o,cl,Math.max(o,cl)+r()*1.2,Math.min(o,cl)-r()*1.2]);
+    p=cl;
+  }
+}
+function draw(){
+  var dpr=window.devicePixelRatio||1,W=window.innerWidth,H=window.innerHeight;
+  c.width=W*dpr;c.height=H*dpr;
+  x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);
+  var n=Math.max(18,Math.round(W/22));
+  if(data.length!==n)seed(n);
+  var min=1e9,max=-1e9;
+  data.forEach(function(d){min=Math.min(min,d[3]);max=Math.max(max,d[2]);});
+  var top=H*0.12,bot=H*0.9;
+  function y(v){return bot-(v-min)/(max-min)*(bot-top);}
+  var w=W/n,bw=Math.max(4,w*0.55),upto=Math.min(n,Math.floor(shown));
+  for(var i=0;i<upto;i++){
+    var d=data[i],col=d[1]>=d[0]?"#22e5ff":"#ff4d6d",cx=i*w+w/2;
+    x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1.5;
+    x.beginPath();x.moveTo(cx,y(d[2]));x.lineTo(cx,y(d[3]));x.stroke();
+    var t=y(Math.max(d[0],d[1])),b=y(Math.min(d[0],d[1]));
+    x.fillRect(cx-bw/2,t,bw,Math.max(2,b-t));
+  }
+}
+function loop(){
+  shown+=0.5;draw();
+  if(shown<data.length)requestAnimationFrame(loop);
+}
+window.addEventListener("resize",function(){shown=1e9;draw();});
+if(reduce){shown=1e9;draw();}else{loop();}
+})();
+</script>
 </body>
 </html>
