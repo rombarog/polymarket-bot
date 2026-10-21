@@ -4,173 +4,90 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>Polymarket: ¿sirven los saltos de precio?</title>
+<title>Polymarket: la mayoría de los saltos de precio son ruido</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark;--bg:#05080f;--ink:#e8f1ff;--mute:#8296b3;--line:#16273f;--panel:#0a1322;--cy:#22e5ff;--rd:#ff4d6d;--gr:#3b4f6b}
+:root{color-scheme:dark;--bg:#05080f;--ink:#e8f1ff;--mute:#8296b3;--line:#16273f;--cy:#22e5ff;--rd:#ff4d6d;--gr:#3b4f6b}
 *{box-sizing:border-box}
 body{margin:0;color:var(--ink);font:400 17px/1.6 "Space Grotesk",system-ui,sans-serif;background:
 radial-gradient(900px 500px at 15% -10%,rgba(34,229,255,.13),transparent 60%),
 linear-gradient(var(--line) 1px,transparent 1px) 0 0/48px 48px,
 linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/48px 48px,var(--bg)}
 main{max-width:780px;margin:0 auto;padding:56px 20px 80px}
-.hero{padding:24px 0 8px}
 .big{font-size:clamp(5rem,26vw,10rem);font-weight:700;line-height:.9;letter-spacing:-.05em;color:var(--cy);text-shadow:0 0 28px rgba(34,229,255,.55),0 0 80px rgba(34,229,255,.25)}
 .big small{font-size:.4em;letter-spacing:0}
-.cap{font-size:1.2rem;max-width:30ch;margin:10px 0 28px}
+.cap{font-size:1.2rem;max-width:32ch;margin:10px 0 28px}
 h1{font-size:clamp(1.5rem,4.6vw,2.2rem);line-height:1.15;margin:0 0 14px;letter-spacing:-.015em}
 h2{font-size:1.3rem;margin:60px 0 12px}
 p{margin:0 0 14px;max-width:62ch}
-.lead{color:var(--mute)}
+.lead,.note{color:var(--mute)}
+.note{font-size:.92rem}
 .panel{background:rgba(10,19,34,.85);border:1px solid #1d3452;border-radius:12px;padding:20px;box-shadow:0 0 40px rgba(34,229,255,.06)}
 .bar{display:flex;height:48px;border-radius:8px;overflow:hidden;margin:16px 0 12px;font-weight:700;background:#0d1a2e}
-.bar span{display:flex;align-items:center;justify-content:center;white-space:nowrap;color:#04121a;transform-origin:left;animation:fill 1.3s cubic-bezier(.2,.8,.2,1) both}
-.bar .r{background:var(--cy);box-shadow:0 0 22px rgba(34,229,255,.6)}
+.bar span{display:flex;align-items:center;justify-content:center;white-space:nowrap;transform-origin:left;animation:fill 1.3s cubic-bezier(.2,.8,.2,1) both}
+.bar .r{background:var(--cy);color:#04121a;box-shadow:0 0 22px rgba(34,229,255,.6)}
 .bar .e{background:var(--gr);color:#dce8fa;animation-delay:.25s}
-.bar .f{background:var(--rd);color:#1a0509;animation-delay:.4s}
 @keyframes fill{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){.bar span{animation:none}}
-.key{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--mute);font-size:.9rem}
 .scroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;min-width:480px;font-variant-numeric:tabular-nums}
 th,td{padding:11px 12px;text-align:right;border-bottom:1px solid var(--line)}
 th:first-child,td:first-child{text-align:left}
 th{font-weight:500;color:var(--mute);font-size:.9rem}
 .neg{color:var(--rd);font-weight:700;text-shadow:0 0 14px rgba(255,77,109,.45)}
-.pos{color:var(--cy);font-weight:700;text-shadow:0 0 14px rgba(34,229,255,.5)}
-.note{color:var(--mute);font-size:.92rem}
 a{color:var(--cy)}
 ul{padding-left:20px;max-width:62ch}li{margin-bottom:8px}
-.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-button{font:inherit;color:var(--ink);background:#0d1a2e;border:1px solid #1d3452;border-radius:8px;padding:8px 14px;cursor:pointer}
-button[aria-pressed=true]{border-color:var(--cy);color:var(--cy);box-shadow:0 0 16px rgba(34,229,255,.25)}
-button:focus-visible,input:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
-label{display:block;margin:16px 0 4px}
-input[type=range]{width:100%;accent-color:var(--cy)}
-.out{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
-.out span{display:block;font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
-.out small{color:var(--mute)}
 </style>
 </head>
 <body>
 <main>
-<div class="hero">
-<div class="big">73<small>%</small></div>
-<p class="cap">de los saltos de precio en mercados chicos de Polymarket volvieron atrás en 24 horas.</p>
-<h1>Los precios vuelven. Pero el spread se come la ganancia.</h1>
-<p class="lead">Un bot en Python lee 200 mercados cada 30 minutos y guarda todo. Medí qué pasa cuando un mercado se mueve 2 puntos o más de golpe. Esto es lo que encontré con una semana de datos.</p>
-</div>
+<div class="big">13<small>¢</small></div>
+<p class="cap">es el spread típico de Polymarket en el momento en que un mercado "salta" 2 puntos.</p>
+<h1>La mayoría de los saltos de precio son ruido, no oportunidades.</h1>
+<p class="lead">Un bot en Python lee 200 mercados cada 30 minutos y guarda precios, volumen y el libro de órdenes. Con más de una semana de datos medí 338 saltos de 2 puntos o más, y esto es lo que encontré.</p>
 
-<h2>Qué pasó después de cada salto</h2>
+<h2>Cuándo ocurren los saltos</h2>
 <div class="panel">
-<p style="margin-bottom:0"><strong>Mercados chicos</strong> (menos de 1.000 USD de volumen en 24 h): 143 saltos en 24 mercados. Resultado 24 horas después:</p>
-<div class="bar" role="img" aria-label="73% revirtió, 10% igual, 17% siguió">
-<span class="r" style="width:73%">73% volvió</span><span class="e" style="width:10%">10%</span><span class="f" style="width:17%">17%</span>
+<p style="margin-bottom:0"><strong>62%</strong> de los saltos ocurrieron con más de 10 centavos de diferencia entre el mejor precio de compra y el de venta.</p>
+<div class="bar" role="img" aria-label="62% con spread mayor a 10 centavos, 38% con menos">
+<span class="r" style="width:62%">62% con spread &gt; 10¢</span><span class="e" style="width:38%">38%</span>
 </div>
-<div class="key"><span>Cian: el precio revirtió</span><span>Gris: quedó igual</span><span>Rojo: siguió en la misma dirección</span></div>
 </div>
-<p class="note" style="margin-top:12px">El 90% de los saltos vienen de mercados chicos. En mercados grandes hay solo 15 casos, muy pocos para sacar conclusiones.</p>
 
-<h2>Simulación: 20 USD por cada salto</h2>
-<p>Si hubiera apostado 20 USD en cada señal, comprando contra el salto (revertir) o a favor (seguir), y cerrando a 1 o 24 horas. El spread es la diferencia entre el precio de compra y el de venta, y lo pagás en cada lado.</p>
+<h2>Por qué pasa</h2>
+<p>El precio que muestra el mercado es el punto medio entre la mejor compra y la mejor venta. Cuando esas dos están muy separadas, alcanza con que alguien mueva una orden de un lado para que el "precio" salte, sin que nadie haya operado.</p>
+<p>Un caso real, en el mercado "Cap on gambling loss deductions repealed before 2027": la compra se quedó fija en 0,20 y la venta osciló entre 0,43 y 0,49. El precio mostrado se movió entre 0,305 y 0,35 sin una sola operación.</p>
+
+<h2>Qué pasa si se intenta operar</h2>
+<p>Simulé 20 USD por salto, comprando al precio de venta real y vendiendo al de compra real, apostando a que el precio vuelve (revertir) o a que sigue (seguir).</p>
 <div class="panel scroll">
 <table>
-<thead><tr><th>Spread por lado</th><th>Revertir 1 h</th><th>Revertir 24 h</th><th>Seguir 1 h</th><th>Seguir 24 h</th></tr></thead>
+<thead><tr><th>Estrategia</th><th>Operaciones</th><th>Ganó</th><th>Total (USD)</th><th>Por operación</th></tr></thead>
 <tbody>
-<tr><td>0 (ideal, no existe)</td><td class="pos">+421</td><td class="pos">+407</td><td class="neg">−289</td><td class="neg">−390</td></tr>
-<tr><td>1 centavo</td><td class="neg">−142</td><td class="neg">−103</td><td class="neg">−638</td><td class="neg">−688</td></tr>
-<tr><td>2 centavos</td><td class="neg">−628</td><td class="neg">−541</td><td class="neg">−954</td><td class="neg">−958</td></tr>
-<tr><td>4 centavos</td><td class="neg">−1434</td><td class="neg">−1262</td><td class="neg">−1509</td><td class="neg">−1430</td></tr>
+<tr><td>Revertir, 1 h</td><td>331</td><td>1%</td><td class="neg">−2.843</td><td class="neg">−8,59</td></tr>
+<tr><td>Revertir, 24 h</td><td>296</td><td>6%</td><td class="neg">−2.410</td><td class="neg">−8,14</td></tr>
+<tr><td>Seguir, 1 h</td><td>331</td><td>1%</td><td class="neg">−2.969</td><td class="neg">−8,97</td></tr>
+<tr><td>Seguir, 24 h</td><td>296</td><td>2%</td><td class="neg">−2.642</td><td class="neg">−8,92</td></tr>
 </tbody>
 </table>
 </div>
-<p class="note" style="margin-top:12px">Resultado total en USD sobre 301 operaciones (1 h) y 260 (24 h).</p>
+<p class="note" style="margin-top:12px">Pierde en las dos direcciones, porque el costo de entrar y salir con 13 centavos de spread es mayor que cualquier movimiento.</p>
 
-<h2>Probalo vos</h2>
-<p>Elegí una estrategia, un horizonte, el spread y el monto, y mirá cuánto habría dado en la simulación.</p>
-<div class="panel" id="sim">
-<div class="seg" role="group" aria-label="Estrategia">
-<button type="button" data-k="rev" aria-pressed="true">Revertir</button>
-<button type="button" data-k="fol" aria-pressed="false">Seguir</button>
-</div>
-<div class="seg" role="group" aria-label="Horizonte">
-<button type="button" data-h="1" aria-pressed="true">Cerrar a 1 h</button>
-<button type="button" data-h="24" aria-pressed="false">Cerrar a 24 h</button>
-</div>
-<label for="c">Spread por lado: <b id="vc"></b></label>
-<input type="range" id="c" min="0" max="4" step="0.25" value="1">
-<label for="m">Monto por operación: <b id="vm"></b></label>
-<input type="range" id="m" min="10" max="100" step="5" value="20">
-<div class="out">
-<div><span id="o1"></span><small>por operación</small></div>
-<div><span id="o2"></span><small id="o2l"></small></div>
-</div>
-<p class="note" id="eq" style="margin:16px 0 0"></p>
-</div>
-<p class="note" style="margin-top:12px">Entre los spreads medidos (0, 1, 2 y 4 centavos) el resultado se interpola. El monto escala el resultado en proporción y no incluye el efecto de mover el precio en mercados chicos, que con montos grandes empeoraría todo.</p>
+<h2>Una corrección</h2>
+<p>Mi primera versión de este análisis usaba un spread supuesto de 0 a 4 centavos y concluía que los precios revertían. Al medir el libro de órdenes real, el spread resultó mucho más grande y gran parte de esas "reversiones" era el punto medio rebotando entre cotizaciones. Corregí el análisis y esta página.</p>
 
-<h2>Conclusión</h2>
-<p>La reversión es real: acierta entre 64% y 72% de las veces sin costos. Pero gana unos 1,50 USD por cada 20, y con 1 centavo de spread por lado ya da pérdida. Apostar a que el salto continúa pierde en todos los escenarios.</p>
-
-<h2>Límites de este análisis</h2>
+<h2>Límites</h2>
 <ul>
-<li>Es una semana de datos y unos 24 mercados que se repiten.</li>
-<li>Los saltos de un mismo mercado se solapan, así que el total pesa menos de lo que parece.</li>
-<li>El precio guardado es un punto medio, y el spread de la simulación es supuesto.</li>
-<li>Ya se está guardando el mejor precio de compra y venta de cada mercado para repetir la simulación con el spread real.</li>
+<li>Son poco más de una semana de datos y unos 200 mercados.</li>
+<li>El spread mediano de todas las lecturas es bajo (menos de 1 centavo), porque lo bajan los mercados casi decididos. El spread alto aparece justo cuando hay saltos.</li>
+<li>No probé señales basadas en operaciones reales ni mercados con mucha liquidez, donde puede ser distinto.</li>
 </ul>
 
 <h2>Cómo está hecho</h2>
 <p>Python y la API pública de Polymarket, corriendo solo cada 30 minutos con GitHub Actions y avisando por Telegram. El código y los datos están en <a href="https://github.com/rombarog/polymarket-bot">github.com/rombarog/polymarket-bot</a>.</p>
 <p class="note">Proyecto de análisis de datos. No es una recomendación de inversión. Verificá que Polymarket esté permitido en tu país antes de usarlo.</p>
 </main>
-<script>
-(function(){
-var X=[0,1,2,4];
-var D={rev:{1:[1.40,-0.47,-2.09,-4.77],24:[1.56,-0.40,-2.08,-4.85]},fol:{1:[-0.96,-2.12,-3.17,-5.01],24:[-1.50,-2.65,-3.68,-5.50]}};
-var N={1:301,24:260};
-var k="rev",h=1;
-var $=function(id){return document.getElementById(id)};
-function interp(a,c){
-  if(c>=4)return a[3];
-  for(var i=0;i<3;i++){if(c<=X[i+1]){return a[i]+(a[i+1]-a[i])*(c-X[i])/(X[i+1]-X[i]);}}
-}
-function equilibrio(a){
-  if(a[0]<0)return null;
-  for(var i=0;i<3;i++){if(a[i+1]<0){return X[i]+a[i]/(a[i]-a[i+1])*(X[i+1]-X[i]);}}
-  return null;
-}
-function sg(n,d){return (n>0.005?"+":n<-0.005?"\u2212":"")+Math.abs(n).toFixed(d).replace(".",",");}
-function pintar(el,n){el.className=n>=0?"pos":"neg";}
-function render(){
-  var c=parseFloat($("c").value),m=parseFloat($("m").value);
-  var a=D[k][h],esc=m/20;
-  var po=interp(a,c)*esc,tot=po*N[h];
-  $("vc").textContent=String(c).replace(".",",")+" centavos";
-  $("vm").textContent=m+" USD";
-  $("o1").textContent=sg(po,2)+" USD";pintar($("o1"),po);
-  $("o2").textContent=sg(tot,0)+" USD";pintar($("o2"),tot);
-  $("o2l").textContent="en "+N[h]+" operaciones";
-  var e=equilibrio(a);
-  $("eq").textContent=e===null
-    ? "Esta estrategia pierde con cualquier spread, incluso con costo cero."
-    : "Punto de equilibrio: alrededor de "+e.toFixed(2).replace(".",",")+" centavos por lado. Con un spread mayor, pierde.";
-}
-function grupo(attr,fn){
-  var bs=document.querySelectorAll("#sim button["+attr+"]");
-  bs.forEach(function(b){b.addEventListener("click",function(){
-    bs.forEach(function(x){x.setAttribute("aria-pressed","false")});
-    b.setAttribute("aria-pressed","true");fn(b.getAttribute(attr));render();
-  });});
-}
-grupo("data-k",function(v){k=v});
-grupo("data-h",function(v){h=parseInt(v,10)});
-$("c").addEventListener("input",render);
-$("m").addEventListener("input",render);
-render();
-})();
-</script>
 </body>
 </html>
